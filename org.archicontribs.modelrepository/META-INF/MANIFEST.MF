@@ -6,7 +6,7 @@ Bundle-Localization: plugin
 Bundle-Version: 0.7.0.qualifier
 Bundle-Vendor: Phillip Beauvoir & Jean-Baptiste Sarrodie
 Require-Bundle: org.eclipse.help.ui,
- com.archimatetool.editor;bundle-version="4.6.0"
+ com.archimatetool.editor;bundle-version="4.5.1"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: org.archicontribs.modelrepository.ModelRepositoryPlugin
