@@ -77,6 +77,9 @@ implements IWorkbenchPreferencePage, IPreferenceConstants {
     private Text fProxyUserNameTextField;
     private Text fProxyUserPasswordTextField;
     
+
+    private Text fCommitScriptTextField;
+    
     private boolean sshPasswordChanged;
     private boolean proxyUsernameChanged;
     private boolean proxyPasswordChanged;
@@ -320,6 +323,18 @@ implements IWorkbenchPreferencePage, IPreferenceConstants {
         fProxyUserPasswordTextField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         fProxyUserPasswordTextField.setEnabled(false);
 
+        // Commit Script Hook
+        Group commitScriptGroup = new Group(client, SWT.NULL);
+        commitScriptGroup.setText(Messages.ModelRepositoryPreferencePage_100);
+        commitScriptGroup.setLayout(new GridLayout(2, false));
+        commitScriptGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        
+        label = new Label(commitScriptGroup, SWT.NULL);
+        label.setText(Messages.ModelRepositoryPreferencePage_101);
+        
+        fCommitScriptTextField = UIUtils.createSingleTextControl(commitScriptGroup, SWT.BORDER, false);
+        fCommitScriptTextField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+       
         setValues();
         
         return client;
@@ -351,6 +366,9 @@ implements IWorkbenchPreferencePage, IPreferenceConstants {
         PersonIdent result = getUserDetails();
         fUserNameTextField.setText(result.getName());
         fUserEmailTextField.setText(result.getEmailAddress());
+        
+        // JArchi Integration
+        fCommitScriptTextField.setText(getPreferenceStore().getString(PREFS_JARCHI_COMMIT_SCRIPT));
         
         // Workspace folder
         fUserRepoFolderTextField.setText(getPreferenceStore().getString(PREFS_REPOSITORY_FOLDER));
@@ -420,6 +438,8 @@ implements IWorkbenchPreferencePage, IPreferenceConstants {
         catch(IOException | ConfigInvalidException ex) {
             ex.printStackTrace();
         }
+        
+        getPreferenceStore().setValue(PREFS_JARCHI_COMMIT_SCRIPT, fCommitScriptTextField.getText());
         
         getPreferenceStore().setValue(PREFS_REPOSITORY_FOLDER, fUserRepoFolderTextField.getText());
         
@@ -499,6 +519,8 @@ implements IWorkbenchPreferencePage, IPreferenceConstants {
         fRequiresProxyAuthenticationButton.setSelection(getPreferenceStore().getDefaultBoolean(PREFS_PROXY_REQUIRES_AUTHENTICATION));
         fProxyUserNameTextField.setText(""); //$NON-NLS-1$
         fProxyUserPasswordTextField.setText(""); //$NON-NLS-1$
+        
+        fCommitScriptTextField.setText(getPreferenceStore().getDefaultString(PREFS_JARCHI_COMMIT_SCRIPT));
         
         updateIdentityControls();
         updateProxyControls();

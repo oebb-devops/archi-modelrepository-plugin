@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.GeneralSecurityException;
 
+import org.archicontribs.modelrepository.ModelRepositoryPlugin;
 import org.archicontribs.modelrepository.authentication.UsernamePassword;
 import org.archicontribs.modelrepository.authentication.internal.EncryptedCredentialsStorage;
 import org.archicontribs.modelrepository.dialogs.CommitDialog;
@@ -17,6 +18,7 @@ import org.archicontribs.modelrepository.grafico.GraficoUtils;
 import org.archicontribs.modelrepository.grafico.IArchiRepository;
 import org.archicontribs.modelrepository.grafico.IRepositoryListener;
 import org.archicontribs.modelrepository.grafico.RepositoryListenerManager;
+import org.archicontribs.modelrepository.preferences.IPreferenceConstants;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
@@ -25,6 +27,13 @@ import org.eclipse.ui.IWorkbenchWindow;
 
 import com.archimatetool.editor.model.IEditorModelManager;
 import com.archimatetool.model.IArchimateModel;
+
+import org.eclipse.core.commands.Parameterization;
+import org.eclipse.core.commands.ParameterizedCommand;
+import org.eclipse.core.commands.Command;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.handlers.IHandlerService;
 
 /**
  * Abstract ModelAction
@@ -106,6 +115,25 @@ public abstract class AbstractModelAction extends Action implements IGraficoMode
         ex.printStackTrace();
         displayErrorDialog(Messages.AbstractModelAction_5, Messages.AbstractModelAction_11);
     }
+    
+    protected boolean callPreCommitScript(String scriptName) {
+    	try {
+			String commandId = "com.archimatetool.scripts.command.runScript";
+			String paramId = "com.archimatetool.scripts.command.runScript.param1";
+	        IHandlerService handlerService = PlatformUI.getWorkbench().getService(IHandlerService.class);
+	        ICommandService commandService = (ICommandService)PlatformUI.getWorkbench().getService(ICommandService.class);
+			Command command = commandService.getCommand(commandId);
+			ParameterizedCommand parmCommand =
+				new ParameterizedCommand(command, new Parameterization[] {
+					new Parameterization(command.getParameter(paramId), scriptName)
+			});
+			handlerService.executeCommand(parmCommand, null);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+    }
 
     /**
      * Offer to save the model
@@ -134,6 +162,13 @@ public abstract class AbstractModelAction extends Action implements IGraficoMode
      * @return true if successful, false otherwise
      */
     protected boolean offerToCommitChanges() {
+    	
+        // Call pre-commit Script via jArchi plug-in command
+    	String scriptname = ModelRepositoryPlugin.INSTANCE.getPreferenceStore().getString(IPreferenceConstants.PREFS_JARCHI_COMMIT_SCRIPT); 
+		if (scriptname != "" && scriptname != null) {
+			callPreCommitScript(scriptname + ".ajs");
+		}
+		
         CommitDialog commitDialog = new CommitDialog(fWindow.getShell(), getRepository());
         int response = commitDialog.open();
         
